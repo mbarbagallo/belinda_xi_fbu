@@ -14,6 +14,7 @@ import java.util.List;
 public class Itinerary extends ParseObject{
 
     public static final String KEY_LOCATIONS = "locations";
+    public static final String KEY_IDS = "ids";
     public static final String KEY_USER = "user";
 
     public String getLocations() {
@@ -30,5 +31,9 @@ public class Itinerary extends ParseObject{
 
     public void setUser(ParseUser parseUser) {
         put(KEY_USER, parseUser);
+    }
+
+    public void setIds(List<String> ids) {
+        put(KEY_IDS, ids);
     }
 }

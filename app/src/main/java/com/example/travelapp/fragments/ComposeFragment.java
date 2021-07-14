@@ -7,33 +7,43 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.travelapp.Itinerary;
+import com.example.travelapp.MoreItemsAdapter;
 import com.example.travelapp.R;
+import com.google.android.gms.common.api.Status;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.parse.ParseException;
-import com.parse.ParseFile;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ComposeFragment extends Fragment {
 
     private static final String TAG = "ComposeFragment";
+    private static final String MAPS_API_KEY = "AIzaSyBHhtl_iqdU5RXtbl_10ElGRyal5eYxrl0";
     private Button btnAdd;
     private EditText etMoreLocations;
     private Button btnSubmit;
-    private EditText etLocation1;
-    private EditText etLocation2;
     private List<String> locations;
+    private List<String> ids;
+    private RecyclerView rvMoreItems;
+    private MoreItemsAdapter moreItemsAdapter;
 
     public ComposeFragment() {
         // Required empty public constructor
@@ -53,53 +63,85 @@ public class ComposeFragment extends Fragment {
 
         this.btnAdd = view.findViewById(R.id.btnAdd);
         this.btnSubmit = view.findViewById(R.id.btnSubmit);
-        this.etMoreLocations = view.findViewById(R.id.etMoreLocations);
-        this.etLocation1 = view.findViewById(R.id.etLocation1);
-        this.etLocation2 = view.findViewById(R.id.etLocation2);
+        this.rvMoreItems = view.findViewById(R.id.rvMoreItems);
+        locations = new ArrayList<>();
+        ids = new ArrayList<>();
+
+        moreItemsAdapter = new MoreItemsAdapter(getContext(), locations);
+        rvMoreItems.setAdapter(moreItemsAdapter);
+        rvMoreItems.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        Places.initialize(getContext(), MAPS_API_KEY);
+        PlacesClient placesClient = Places.createClient(getContext());
+        AutocompleteSupportFragment autocompleteSupportFragment =
+                (AutocompleteSupportFragment) getChildFragmentManager()
+                        .findFragmentById(R.id.autocomplete_fragment);
+        autocompleteSupportFragment.setTypeFilter(TypeFilter.ESTABLISHMENT);
+        autocompleteSupportFragment.setCountry("US");
+        final String[] placeName = {""};
+        final String[] placeId = {""};
+        // TODO - possibly add more fields
+        autocompleteSupportFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        autocompleteSupportFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                placeName[0] = place.getName();
+                placeId[0] = place.getId();
+                Log.i(TAG, "place: " + placeName[0] + " id: " + place.getId());
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                Log.e(TAG, "error occurred: " + status);
+            }
+        });
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO - add more locations and display on RV
+                String todoItem = placeName[0];
+                if (todoItem.isEmpty()) {
+                    Toast.makeText(getContext(), "can't enter empty location!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                locations.add(todoItem);
+                ids.add(placeId[0]);
+                moreItemsAdapter.notifyItemInserted(locations.size() - 1);
+                autocompleteSupportFragment.setText("");
+                Toast.makeText(getContext(), "location was added", Toast.LENGTH_SHORT).show();
             }
         });
 
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // add required 2 locations to list of locations
-                String location1 = etLocation1.getText().toString();
-                String location2 = etLocation2.getText().toString();
-                // check for locations being empty
-                if (location1.isEmpty() || location2.isEmpty()) {
+                // check for too few locations
+                if (locations.size() < 2){
                     Toast.makeText(getContext(), "must enter at least 2 locations!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                locations = new ArrayList<>();
-                locations.add(location1);
-                locations.add(location2);
-                // TODO - add additional locations to list of locations
-
                 ParseUser currentUser = ParseUser.getCurrentUser();
                 saveItinerary(locations, currentUser);
             }
         });
+
     }
     private void saveItinerary(List<String> locations, ParseUser currentUser) {
         Itinerary itinerary = new Itinerary();
         itinerary.setLocations(locations);
         itinerary.setUser(currentUser);
+        itinerary.setIds(ids);
         itinerary.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
                 if (e != null) {
                     Log.e(TAG, "error while saving", e);
                     Toast.makeText(getContext(), "error while saving!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
                 Toast.makeText(getContext(), "post save was successful!", Toast.LENGTH_SHORT).show();
-                etLocation1.setText("");
-                etLocation2.setText("");
-                etMoreLocations.setText("");
+                locations.clear();
+                moreItemsAdapter.notifyDataSetChanged();
             }
         });
     }
