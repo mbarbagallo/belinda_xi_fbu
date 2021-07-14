@@ -16,12 +16,14 @@ import com.example.travelapp.fragments.ComposeFragment;
 import com.example.travelapp.fragments.HomeFragment;
 import com.example.travelapp.fragments.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import com.parse.ParseUser;
 
 public class MainActivity extends AppCompatActivity {
 
     private Button btnLogOut;
     private BottomNavigationView bottomNavigationView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,5 +60,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         bottomNavigationView.setSelectedItemId(R.id.action_home);
+
     }
 }
