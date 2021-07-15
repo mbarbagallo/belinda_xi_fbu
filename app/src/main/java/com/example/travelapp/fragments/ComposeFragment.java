@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.travelapp.BuildConfig;
 import com.example.travelapp.Itinerary;
 import com.example.travelapp.MoreItemsAdapter;
 import com.example.travelapp.R;
@@ -36,7 +37,8 @@ import java.util.List;
 public class ComposeFragment extends Fragment {
 
     private static final String TAG = "ComposeFragment";
-    private static final String MAPS_API_KEY = "AIzaSyBHhtl_iqdU5RXtbl_10ElGRyal5eYxrl0";
+//    private static final String MAPS_API_KEY = "AIzaSyBHhtl_iqdU5RXtbl_10ElGRyal5eYxrl0";
+    public static final String API_KEY = BuildConfig.apiKey;
     private Button btnAdd;
     private EditText etMoreLocations;
     private Button btnSubmit;
@@ -71,7 +73,7 @@ public class ComposeFragment extends Fragment {
         rvMoreItems.setAdapter(moreItemsAdapter);
         rvMoreItems.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        Places.initialize(getContext(), MAPS_API_KEY);
+        Places.initialize(getContext(), API_KEY);
         PlacesClient placesClient = Places.createClient(getContext());
         AutocompleteSupportFragment autocompleteSupportFragment =
                 (AutocompleteSupportFragment) getChildFragmentManager()
