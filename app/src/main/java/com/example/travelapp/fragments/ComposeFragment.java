@@ -135,7 +135,7 @@ public class ComposeFragment extends Fragment {
                 .apiKey(API_KEY)
                 .build();
         itinerary.setLocations(locations);
-        Log.i("from " + locations.get(0), " to: " + locations.get(1));
+        Log.i(TAG, "from " + locations.get(0) + " to: " + locations.get(1));
         // testing that getDistance works by getting distance between first two locations
         itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
         itinerary.setUser(currentUser);
@@ -150,6 +150,7 @@ public class ComposeFragment extends Fragment {
                 }
                 Toast.makeText(getContext(), "post save was successful!", Toast.LENGTH_SHORT).show();
                 locations.clear();
+                ids.clear();
                 moreItemsAdapter.notifyDataSetChanged();
             }
         });
