@@ -26,6 +26,7 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.maps.GeoApiContext;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -37,15 +38,18 @@ import java.util.List;
 public class ComposeFragment extends Fragment {
 
     private static final String TAG = "ComposeFragment";
-//    private static final String MAPS_API_KEY = "AIzaSyBHhtl_iqdU5RXtbl_10ElGRyal5eYxrl0";
     public static final String API_KEY = BuildConfig.apiKey;
     private Button btnAdd;
     private EditText etMoreLocations;
     private Button btnSubmit;
+    // list of location names
     private List<String> locations;
+    // list of unique ids for each location
     private List<String> ids;
     private RecyclerView rvMoreItems;
     private MoreItemsAdapter moreItemsAdapter;
+    public String placeName;
+    public String placeId;
 
     public ComposeFragment() {
         // Required empty public constructor
@@ -80,16 +84,14 @@ public class ComposeFragment extends Fragment {
                         .findFragmentById(R.id.autocomplete_fragment);
         autocompleteSupportFragment.setTypeFilter(TypeFilter.ESTABLISHMENT);
         autocompleteSupportFragment.setCountry("US");
-        final String[] placeName = {""};
-        final String[] placeId = {""};
         // TODO - possibly add more fields
         autocompleteSupportFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
         autocompleteSupportFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
-                placeName[0] = place.getName();
-                placeId[0] = place.getId();
-                Log.i(TAG, "place: " + placeName[0] + " id: " + place.getId());
+                placeName = place.getName();
+                placeId = place.getId();
+                Log.i(TAG, "place: " + placeName + " id: " + place.getId());
             }
 
             @Override
@@ -101,13 +103,12 @@ public class ComposeFragment extends Fragment {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String todoItem = placeName[0];
-                if (todoItem.isEmpty()) {
+                if (placeName.isEmpty()) {
                     Toast.makeText(getContext(), "can't enter empty location!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                locations.add(todoItem);
-                ids.add(placeId[0]);
+                locations.add(placeName);
+                ids.add(placeId);
                 moreItemsAdapter.notifyItemInserted(locations.size() - 1);
                 autocompleteSupportFragment.setText("");
                 Toast.makeText(getContext(), "location was added", Toast.LENGTH_SHORT).show();
@@ -123,14 +124,20 @@ public class ComposeFragment extends Fragment {
                     return;
                 }
                 ParseUser currentUser = ParseUser.getCurrentUser();
-                saveItinerary(locations, currentUser);
+                saveItinerary(currentUser);
             }
         });
 
     }
-    private void saveItinerary(List<String> locations, ParseUser currentUser) {
+    private void saveItinerary(ParseUser currentUser) {
         Itinerary itinerary = new Itinerary();
+        GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
+                .apiKey(API_KEY)
+                .build();
         itinerary.setLocations(locations);
+        Log.i(TAG, "from " + locations.get(0) + " to: " + locations.get(1));
+        // testing that getDistance works by getting distance between first two locations
+        itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
         itinerary.saveInBackground(new SaveCallback() {
@@ -143,6 +150,7 @@ public class ComposeFragment extends Fragment {
                 }
                 Toast.makeText(getContext(), "post save was successful!", Toast.LENGTH_SHORT).show();
                 locations.clear();
+                ids.clear();
                 moreItemsAdapter.notifyDataSetChanged();
             }
         });
