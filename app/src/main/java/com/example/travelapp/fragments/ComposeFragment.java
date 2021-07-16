@@ -1,5 +1,6 @@
 package com.example.travelapp.fragments;
 
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -84,6 +85,7 @@ public class ComposeFragment extends Fragment {
                         .findFragmentById(R.id.autocomplete_fragment);
         autocompleteSupportFragment.setTypeFilter(TypeFilter.ESTABLISHMENT);
         autocompleteSupportFragment.setCountry("US");
+
         // TODO - possibly add more fields
         autocompleteSupportFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
         autocompleteSupportFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -131,10 +133,10 @@ public class ComposeFragment extends Fragment {
     }
     private void saveItinerary(ParseUser currentUser) {
         Itinerary itinerary = new Itinerary();
+        itinerary.setLocations(locations);
         GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
                 .apiKey(API_KEY)
                 .build();
-        itinerary.setLocations(locations);
         Log.i(TAG, "from " + locations.get(0) + " to: " + locations.get(1));
         // testing that getDistance works by getting distance between first two locations
         itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
