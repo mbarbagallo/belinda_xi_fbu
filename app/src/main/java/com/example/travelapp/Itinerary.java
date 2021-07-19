@@ -12,6 +12,8 @@ import com.parse.ParseClassName;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.parceler.Parcel;
 
 import java.util.List;
@@ -24,10 +26,25 @@ public class Itinerary extends ParseObject{
     public static final String KEY_IDS = "ids";
     public static final String KEY_USER = "user";
     private static final String TAG = "Itinerary";
+    private static final String KEY_TITLE = "title";
     private Distance distance = new Distance();
 
     public String getLocations() {
-        return getString(KEY_LOCATIONS);
+        JSONArray locationsArray = getJSONArray(KEY_LOCATIONS);
+        String locations = null;
+        for (int i = 0; i < locationsArray.length(); i++) {
+            try {
+                if (i == 0) {
+                    locations = locationsArray.getString(0);
+                } else {
+                    locations = locations + ", " + locationsArray.getString(i);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        Log.i(TAG, "itinerary locations: " + locations);
+        return locations;
     }
 
     public void setLocations(List<String> locations) {
@@ -66,5 +83,18 @@ public class Itinerary extends ParseObject{
             }
         });
         return distance;
+    }
+
+    public ParseFile getImage() {
+        // TODO - add image to Itinerary Parse Object and return it here
+        return null;
+    }
+
+    public void setTitle(String title) {
+        put(KEY_TITLE, title);
+    }
+
+    public String getTitle() {
+        return getString(KEY_TITLE);
     }
 }

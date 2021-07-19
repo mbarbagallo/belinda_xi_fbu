@@ -41,6 +41,7 @@ public class ComposeFragment extends Fragment {
     public static final String API_KEY = BuildConfig.apiKey;
     private Button btnAdd;
     private EditText etMoreLocations;
+    private EditText etTitle;
     private Button btnSubmit;
     // list of location names
     private List<String> locations;
@@ -70,6 +71,7 @@ public class ComposeFragment extends Fragment {
         this.btnAdd = view.findViewById(R.id.btnAdd);
         this.btnSubmit = view.findViewById(R.id.btnSubmit);
         this.rvMoreItems = view.findViewById(R.id.rvMoreItems);
+        this.etTitle = view.findViewById(R.id.etTitle);
         locations = new ArrayList<>();
         ids = new ArrayList<>();
 
@@ -135,6 +137,7 @@ public class ComposeFragment extends Fragment {
                 .apiKey(API_KEY)
                 .build();
         itinerary.setLocations(locations);
+        itinerary.setTitle(etTitle.getText().toString());
         Log.i(TAG, "from " + locations.get(0) + " to: " + locations.get(1));
         // testing that getDistance works by getting distance between first two locations
         itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
