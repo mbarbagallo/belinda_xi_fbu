@@ -127,10 +127,16 @@ public class ComposeFragment extends Fragment {
                 }
                 ParseUser currentUser = ParseUser.getCurrentUser();
                 saveItinerary(currentUser);
+                saveDestination(currentUser);
             }
         });
 
     }
+
+    private void saveDestination(ParseUser currentUser) {
+
+    }
+
     private void saveItinerary(ParseUser currentUser) {
         Itinerary itinerary = new Itinerary();
         GeoApiContext mGeoApiContext = new GeoApiContext.Builder()

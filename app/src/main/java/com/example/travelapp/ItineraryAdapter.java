@@ -7,11 +7,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.travelapp.fragments.DetailsFragment;
 import com.parse.ParseFile;
 
 import java.util.List;
@@ -44,7 +48,7 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
         return itineraries.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder {
         private TextView tvTitle;
         private TextView tvLocations;
         private TextView tvDistance;
@@ -55,6 +59,24 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
             tvLocations = itemView.findViewById(R.id.tvLocations);
             tvDistance = itemView.findViewById(R.id.tvDistance);
             ivPhoto = itemView.findViewById(R.id.ivPhoto);
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Log.i(TAG, "long click");
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        Itinerary post = itineraries.get(position);
+                        // open new fragment
+                        // TODO - pass information to fragment
+                        Fragment fragment = new DetailsFragment();
+
+                        AppCompatActivity activity = (AppCompatActivity) context;
+                        activity.getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragmentHome, fragment).addToBackStack(null).commit();
+                    }
+                    return true;
+                }
+            });
         }
 
         public void bind(Itinerary itinerary) {
