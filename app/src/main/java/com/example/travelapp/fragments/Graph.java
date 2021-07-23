@@ -10,12 +10,12 @@ public class Graph {
 
     HashMap<Integer, Integer>[] arr;
 
-    public Graph(int n) {
-        if (n <= 0) {
+    public Graph(int vertices) {
+        if (vertices <= 0) {
             throw new IllegalArgumentException();
         }
-        arr = (HashMap<Integer, Integer>[]) new HashMap[n];
-        for (int i = 0; i < n; i ++) {
+        arr = (HashMap<Integer, Integer>[]) new HashMap[vertices];
+        for (int i = 0; i < vertices; i ++) {
             arr[i] = new HashMap<Integer, Integer>();
         }
     }
@@ -23,12 +23,18 @@ public class Graph {
 //    Returns the number of vertices in the graph.
 
     public int getSize() {
+        if (arr == null) {
+            throw new IllegalArgumentException();
+        }
         return arr.length;
     }
 
 //    Determines if there's an directed edge from u to v.
 
     public boolean hasEdge(int u, int v) {
+        if (arr == null) {
+            throw new IllegalArgumentException();
+        }
         int len = arr.length;
         if (u >= len || v >= len || u < 0 || v < 0) {
             throw new IllegalArgumentException();
@@ -39,6 +45,9 @@ public class Graph {
 //    Returns the weight of an the directed edge u-v.
 
     public int getWeight(int u, int v) {
+        if (arr == null) {
+            throw new IllegalArgumentException();
+        }
         int len = arr.length;
         if (u >= len || v >= len || u < 0 || v < 0) {
             throw new IllegalArgumentException();
@@ -51,7 +60,11 @@ public class Graph {
 
 //     Creates an edge u-v if it does not already exist. Does not modify the edge weight
 //     if u-v already exists.
+
     public boolean addEdge(int u, int v, int weight) {
+        if (arr == null) {
+            throw new IllegalArgumentException();
+        }
         int len = arr.length;
         if (u == v || u >= len || v  >= len || u < 0 || v < 0) {
             throw new IllegalArgumentException();
@@ -66,6 +79,9 @@ public class Graph {
     // Returns the out-neighbors of the specified vertex.
 
     public Set<Integer> outNeighbors(int v) {
+        if (arr == null) {
+            throw new IllegalArgumentException();
+        }
         int len = arr.length;
         if (v < 0 || v >= len) {
             throw new IllegalArgumentException();
