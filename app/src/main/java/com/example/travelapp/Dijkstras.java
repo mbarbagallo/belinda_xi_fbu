@@ -1,8 +1,13 @@
 package com.example.travelapp;
 
+import android.util.Log;
+
 import com.example.travelapp.BinaryMinHeap;
 import com.example.travelapp.fragments.Graph;
+import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
+import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.Distance;
 import com.parse.ParseQuery;
 
@@ -16,8 +21,10 @@ import static com.example.travelapp.fragments.ComposeFragment.API_KEY;
 
 public class Dijkstras {
 
+    private static final String TAG = "Dijkstras";
+
     // TODO - check max number of google maps api calls
-    public static Graph createGraph(List<String> ids, Itinerary itinerary) {
+    public static Graph createGraph(List<String> ids, Itinerary itinerary) throws InterruptedException {
         GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
                 .apiKey(API_KEY)
                 .build();
@@ -38,7 +45,7 @@ public class Dijkstras {
         }
         int interval = totalDistance / (ids.size() * 2);
         for (int i = 0; i < ids.size(); i++) {
-            for (int j = 0; j < ids.size(); j++) {
+            for (int j = i + 1; j < ids.size(); j++) {
                 int factor = i + j;
                 // directions from i to j
                 int currentDistanceIJ =

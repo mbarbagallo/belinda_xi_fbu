@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.parceler.Parcel;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 @Parcel(analyze = Itinerary.class)
 @ParseClassName("Itinerary")
@@ -27,6 +28,7 @@ public class Itinerary extends ParseObject{
     public static final String KEY_USER = "user";
     private static final String TAG = "Itinerary";
     private static final String KEY_TITLE = "title";
+    private static final String KEY_DETAILS = "details";
     private Distance distance = new Distance();
 
     public String getLocations() {
@@ -63,28 +65,6 @@ public class Itinerary extends ParseObject{
         put(KEY_IDS, ids);
     }
 
-    public Distance getDistance(String id1, String id2, GeoApiContext mGeoApiContext) {
-
-        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
-
-        directions.origin("place_id:" + id1);
-        directions.destination("place_id:" + id2).setCallback(new PendingResult.Callback<DirectionsResult>() {
-            @Override
-            public void onResult(DirectionsResult result) {
-                // TODO - for possibly considering routes & duration too later
-//                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
-//                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
-                Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
-                distance = result.routes[0].legs[0].distance;
-            }
-            @Override
-            public void onFailure(Throwable e) {
-                Log.e(TAG, "calculateDirections: Failed to get directions: " + e.getMessage() );
-            }
-        });
-        return distance;
-    }
-
     public ParseFile getImage() {
         // TODO - add image to Itinerary Parse Object and return it here
         return null;
@@ -96,5 +76,40 @@ public class Itinerary extends ParseObject{
 
     public String getTitle() {
         return getString(KEY_TITLE);
+    }
+
+    public void setDetails(Details details) {
+        put(KEY_DETAILS, details);
+    }
+
+    public Details getDetails() {
+        return (Details) getParseObject(KEY_DETAILS);
+    }
+
+    public com.google.maps.model.Distance getDistance(String id1, String id2, GeoApiContext mGeoApiContext) throws InterruptedException {
+
+        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
+
+        directions.origin("place_id:" + id1);
+        final CountDownLatch latch = new CountDownLatch(1);
+        directions.destination("place_id:" + id2).setCallback(new PendingResult.Callback<DirectionsResult>() {
+            @Override
+            public void onResult(DirectionsResult result) {
+                // TODO - for possibly considering routes & duration too later
+//                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
+//                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
+//                Log.i(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
+                distance = result.routes[0].legs[0].distance;
+                latch.countDown();
+            }
+            @Override
+            public void onFailure(Throwable e) {
+                Log.e(TAG, "calculateDirections: Failed to get directions: " + e.getMessage() );
+                latch.countDown();
+            }
+        });
+        latch.await();
+        Log.i(TAG, "distanceHERE: " + distance);
+        return distance;
     }
 }
