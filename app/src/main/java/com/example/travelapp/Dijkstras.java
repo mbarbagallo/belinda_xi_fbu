@@ -46,6 +46,9 @@ public class Dijkstras {
         int interval = totalDistance / (ids.size() * 2);
         for (int i = 0; i < ids.size(); i++) {
             for (int j = i + 1; j < ids.size(); j++) {
+                if ((i == 0 && j == 1) || (i == 1 && j == 0)) {
+                    continue;
+                }
                 int factor = i + j;
                 // directions from i to j
                 int currentDistanceIJ =

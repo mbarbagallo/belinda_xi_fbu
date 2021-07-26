@@ -43,6 +43,7 @@ import static com.example.travelapp.Dijkstras.getShortestPath;
 public class ComposeFragment extends Fragment {
 
     private static final String TAG = "ComposeFragment";
+    public static final double METERS_IN_A_MILE = 1609.34;
     public static final String API_KEY = BuildConfig.apiKey;
     private Button btnAdd;
     private EditText etMoreLocations;
@@ -100,7 +101,6 @@ public class ComposeFragment extends Fragment {
             public void onPlaceSelected(@NonNull Place place) {
                 placeName = place.getName();
                 placeId = place.getId();
-                Log.i(TAG, "place: " + placeName + " id: " + place.getId());
             }
 
             @Override
@@ -158,27 +158,28 @@ public class ComposeFragment extends Fragment {
                 .apiKey(API_KEY)
                 .build();
         for (int i = 0; i < listNodesInt.size(); i++) {
+            // get node number at position i
+            int nodeNumber = listNodesInt.get(i);
             if (i != listNodesInt.size() - 1) {
                 // get distance between location i and i + 1
-                Distance distance = itinerary.getDistance(ids.get(i), ids.get(i + 1), mGeoApiContext);
+                Distance distance = itinerary.getDistance(ids.get(nodeNumber), ids.get(nodeNumber + 1), mGeoApiContext);
                 // add distance String to listDistances
                 String distanceMiles = distance.humanReadable;
-                Log.i(TAG, "i: " + i + " distance: " + distance +" distanceMiles: " + distanceMiles);
                 listDistances.add(distanceMiles);
-                // convert distance to Integer and add to totalDistance
-                double distanceValue = Double.valueOf(distanceMiles.substring(0, distanceMiles.length() - 3));
+                // convert distance to miles and add to totalDistance
+                double distanceValue = Double.valueOf(distance.inMeters / METERS_IN_A_MILE);
                 totalDistance += distanceValue;
             }
             // add location String name to listNodesNames
-            listNodesNames.add(locations.get(i));
+            listNodesNames.add(locations.get(nodeNumber));
         }
-        Log.i(TAG, "listNodesInt: " + listNodesInt);
-        Log.i(TAG, "listDistancesInt: " + listDistances);
+        // round totalDistance to 1 digit
+        totalDistance = Math.round(totalDistance * 10) / 10.0;
         // save to Parse
         Details details = new Details();
         details.setDistances(listDistances);
         details.setDestinations(listNodesNames);
-        details.setTotalDistance(totalDistance.toString() + " mi");
+        itinerary.setTotalDistance(totalDistance.toString() + " mi");
         return details;
     }
 
@@ -189,11 +190,8 @@ public class ComposeFragment extends Fragment {
                 .build();
         itinerary.setLocations(locations);
         itinerary.setTitle(etTitle.getText().toString());
-        Log.i(TAG, "from " + locations.get(0) + " to: " + locations.get(1));
         // testing that getDistance works by getting distance between first two locations
         Distance distance = itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
-        Log.i(TAG, "distance human readable - " + distance.humanReadable);
-        Log.i(TAG, "ids: " + ids.get(0));
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
         // TODO - save details

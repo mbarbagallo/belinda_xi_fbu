@@ -2,24 +2,43 @@ package com.example.travelapp.fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.example.travelapp.Details;
+import com.example.travelapp.DetailsAdapter;
+import com.example.travelapp.Itinerary;
 import com.example.travelapp.R;
 
+import java.util.List;
+
 public class DetailsFragment extends Fragment {
+
+    private TextView tvTitleDetails;
+    private TextView tvDestinationsDetails;
+    private TextView tvDistanceDetails;
+    private ImageView ivPhotoDetails;
+    private RecyclerView rvDetails;
+    private Details details;
+    private Itinerary itinerary;
+    private DetailsAdapter adapter;
 
     public DetailsFragment() {
         // Required empty public constructor
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public DetailsFragment(Details details, Itinerary itinerary) {
+        this.details = details;
+        this.itinerary = itinerary;
     }
 
     @Override
@@ -27,5 +46,28 @@ public class DetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_details, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        tvTitleDetails = view.findViewById(R.id.tvTitle);
+        tvDestinationsDetails = view.findViewById(R.id.tvDestinationsDetails);
+        tvDistanceDetails = view.findViewById(R.id.tvDistance);
+        ivPhotoDetails = view.findViewById(R.id.ivPhoto);
+
+        tvTitleDetails.setText(itinerary.getTitle());
+        // convert array to String and remove [] at both ends of the String
+        String destinations = details.getDestinations().toString();
+        destinations = destinations.substring(1, destinations.length() - 1);
+
+        tvDestinationsDetails.setText(destinations);
+        tvDistanceDetails.setText(itinerary.getTotalDistance());
+        
+        rvDetails = view.findViewById(R.id.rvDetails);
+        adapter = new DetailsAdapter(getContext(), details);
+        rvDetails.setAdapter(adapter);
+        rvDetails.setLayoutManager(new LinearLayoutManager(getContext()));
+
     }
 }

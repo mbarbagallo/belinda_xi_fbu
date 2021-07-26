@@ -26,6 +26,7 @@ public class Itinerary extends ParseObject{
     public static final String KEY_LOCATIONS = "locations";
     public static final String KEY_IDS = "ids";
     public static final String KEY_USER = "user";
+    public static final String KEY_TOTAL_DISTANCE = "totalDistance";
     private static final String TAG = "Itinerary";
     private static final String KEY_TITLE = "title";
     private static final String KEY_DETAILS = "details";
@@ -45,7 +46,6 @@ public class Itinerary extends ParseObject{
                 e.printStackTrace();
             }
         }
-        Log.i(TAG, "itinerary locations: " + locations);
         return locations;
     }
 
@@ -83,7 +83,8 @@ public class Itinerary extends ParseObject{
     }
 
     public Details getDetails() {
-        return (Details) getParseObject(KEY_DETAILS);
+        Details details = (Details) getParseObject(KEY_DETAILS);
+        return details;
     }
 
     public com.google.maps.model.Distance getDistance(String id1, String id2, GeoApiContext mGeoApiContext) throws InterruptedException {
@@ -109,7 +110,14 @@ public class Itinerary extends ParseObject{
             }
         });
         latch.await();
-        Log.i(TAG, "distanceHERE: " + distance);
         return distance;
+    }
+
+    public void setTotalDistance(String totalDistance) {
+        put(KEY_TOTAL_DISTANCE, totalDistance);
+    }
+
+    public String getTotalDistance() {
+        return getString(KEY_TOTAL_DISTANCE);
     }
 }

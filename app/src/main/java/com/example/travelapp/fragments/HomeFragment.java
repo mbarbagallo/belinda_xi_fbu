@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.example.travelapp.Itinerary;
 import com.example.travelapp.ItineraryAdapter;
@@ -51,10 +50,10 @@ public class HomeFragment extends Fragment {
         adapter = new ItineraryAdapter(getContext(), allItineraries);
         rvItineraries.setAdapter(adapter);
         rvItineraries.setLayoutManager(new LinearLayoutManager(getContext()));
-        queryPosts();
+        queryItineraries();
     }
 
-    private void queryPosts() {
+    private void queryItineraries() {
         ParseQuery<Itinerary> query = ParseQuery.getQuery(Itinerary.class);
         query.include(Itinerary.KEY_USER);
         query.setLimit(20);

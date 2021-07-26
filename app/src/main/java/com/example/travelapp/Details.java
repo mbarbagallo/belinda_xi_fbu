@@ -57,4 +57,8 @@ public class Details extends ParseObject {
         }
         return distancesList;
     }
+
+    public String getTotalDistance() {
+        return getString(KEY_TOTAL_DISTANCE);
+    }
 }

@@ -45,7 +45,7 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
             <TextView
-                android:id="@+id/tvLocationsDetails"
+                android:id="@+id/tvDestinationsDetails"
                 android:layout_width="175dp"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/tvTitle"
