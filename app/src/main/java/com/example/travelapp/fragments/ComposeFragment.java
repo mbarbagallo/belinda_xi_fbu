@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.travelapp.BuildConfig;
+import com.example.travelapp.Details;
 import com.example.travelapp.Itinerary;
 import com.example.travelapp.MoreItemsAdapter;
 import com.example.travelapp.R;
@@ -27,6 +28,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.maps.GeoApiContext;
+import com.google.maps.model.Distance;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -35,9 +37,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.example.travelapp.Dijkstras.createGraph;
+import static com.example.travelapp.Dijkstras.getShortestPath;
+
 public class ComposeFragment extends Fragment {
 
     private static final String TAG = "ComposeFragment";
+    public static final double METERS_IN_A_MILE = 1609.34;
     public static final String API_KEY = BuildConfig.apiKey;
     private Button btnAdd;
     private EditText etMoreLocations;
@@ -51,6 +57,8 @@ public class ComposeFragment extends Fragment {
     private MoreItemsAdapter moreItemsAdapter;
     public String placeName;
     public String placeId;
+    private static final int firstPreference = 0;
+    private static final int secondPreference = 1;
 
     public ComposeFragment() {
         // Required empty public constructor
@@ -93,7 +101,6 @@ public class ComposeFragment extends Fragment {
             public void onPlaceSelected(@NonNull Place place) {
                 placeName = place.getName();
                 placeId = place.getId();
-                Log.i(TAG, "place: " + placeName + " id: " + place.getId());
             }
 
             @Override
@@ -126,23 +133,69 @@ public class ComposeFragment extends Fragment {
                     return;
                 }
                 ParseUser currentUser = ParseUser.getCurrentUser();
-                saveItinerary(currentUser);
+                try {
+                    Itinerary itinerary = saveItinerary(currentUser);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+//                saveDetails(currentUser, itinerary);
             }
         });
 
     }
-    private void saveItinerary(ParseUser currentUser) {
+
+    private Details saveDetails(ParseUser currentUser, Itinerary itinerary) throws InterruptedException {
+        // create graph and call algorithm to determine path
+        Graph graph = createGraph(ids, itinerary);
+        // list that stores the indices of locations in order of traversal from locations list
+        List<Integer> listNodesInt = getShortestPath(graph, firstPreference, secondPreference);
+        // list that stores names of locations in order of traversal
+        List<String> listNodesNames = new ArrayList<>();
+        // list that stores distances between locations
+        List<String> listDistances = new ArrayList<>();
+        Double totalDistance = 0.0;
+        GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
+                .apiKey(API_KEY)
+                .build();
+        for (int i = 0; i < listNodesInt.size(); i++) {
+            // get node number at position i
+            int nodeNumber = listNodesInt.get(i);
+            if (i != listNodesInt.size() - 1) {
+                // get distance between location i and i + 1
+                Distance distance = itinerary.getDistance(ids.get(nodeNumber), ids.get(nodeNumber + 1), mGeoApiContext);
+                // add distance String to listDistances
+                String distanceMiles = distance.humanReadable;
+                listDistances.add(distanceMiles);
+                // convert distance to miles and add to totalDistance
+                double distanceValue = Double.valueOf(distance.inMeters / METERS_IN_A_MILE);
+                totalDistance += distanceValue;
+            }
+            // add location String name to listNodesNames
+            listNodesNames.add(locations.get(nodeNumber));
+        }
+        // round totalDistance to 1 digit
+        totalDistance = Math.round(totalDistance * 10) / 10.0;
+        // save to Parse
+        Details details = new Details();
+        details.setDistances(listDistances);
+        details.setDestinations(listNodesNames);
+        itinerary.setTotalDistance(totalDistance.toString() + " mi");
+        return details;
+    }
+
+    private Itinerary saveItinerary(ParseUser currentUser) throws InterruptedException {
         Itinerary itinerary = new Itinerary();
         GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
                 .apiKey(API_KEY)
                 .build();
         itinerary.setLocations(locations);
         itinerary.setTitle(etTitle.getText().toString());
-        Log.i(TAG, "from " + locations.get(0) + " to: " + locations.get(1));
         // testing that getDistance works by getting distance between first two locations
-        itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
+        Distance distance = itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
+        // TODO - save details
+        itinerary.setDetails(saveDetails(currentUser, itinerary));
         itinerary.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -157,5 +210,6 @@ public class ComposeFragment extends Fragment {
                 moreItemsAdapter.notifyDataSetChanged();
             }
         });
+        return itinerary;
     }
 }

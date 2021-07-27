@@ -5,18 +5,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+/**
+ * BinaryMinHeap class. Implemented with an ArrayList that can be
+ * viewed as a nearly complete binary tree, where every node in the
+ * tree corresponds to an element in the array. Taken and adapted
+ * from a Penn homework assignment.
+ * @param <Key> - The key used to determine priority in the heap.
+ *             Does not have to be distinct.
+ * @param <V> - The value of what we are adding to the heap. In
+ *           Dijkstras, this would correspond to the node number.
+ */
 
 public class BinaryMinHeap<Key extends Comparable<Key>, V> {
-    private ArrayList<Entry<Key, V>> a;
+
+    // arrayList can be viewed as a nearly complete binary tree
+    private ArrayList<Entry<Key, V>> arrayList;
+    // indices is a HashMap used for easier lookup of where values
+    // are in the array
     private HashMap<V, Integer> indices;
 
     public BinaryMinHeap() {
-        a = new ArrayList<Entry<Key, V>>();
+        arrayList = new ArrayList<Entry<Key, V>>();
         indices = new HashMap<V, Integer>();
     }
 
     public int size() {
-        return a.size();
+        return arrayList.size();
     }
 
     public boolean containsValue(V value) {
@@ -31,54 +48,69 @@ public class BinaryMinHeap<Key extends Comparable<Key>, V> {
             throw new IllegalArgumentException("value is already in the min-heap!");
         }
 
-        a.add(new Entry<Key, V>(key, value));
-        int index = a.size() - 1;
-        int parent = (index + 1) / 2 - 1;
+        arrayList.add(new Entry<Key, V>(key, value));
+        // set index to where we just added the Entry (at the end = index size - 1 of the arrayList)
+        int index = arrayList.size() - 1;
+        // calculates the index of the parent of the current node, given the current node's index
+        Function<Integer, Integer> calculateParentIndex = (n) -> { return (n + 1) / 2 - 1; };
+        int parent = calculateParentIndex.apply(index);
 
         indices.put(value, index);
-        helperPlace(index, parent);
+        placeElementAtIndex(index, parent);
 
     }
-    // create helper function that both decreaseKey and add can call
 
-    private int helperPlace(int index, int parent) {
-        int finIndex = index;
-        if (a.size() == 1) {
+    /*
+        placeElementAtIndex is a helper method that places the element in the passed in index where
+        it should belong in the heap. called by decreaseKey and add.
+     */
+
+    private int placeElementAtIndex(int index, int parent) {
+        if (arrayList.size() == 1) {
             return 0;
         }
-        if (index > -1 && parent > -1) {
-            while (index > 0 && a.get(parent).key.compareTo(a.get(index).key) > 0) {
-                //exchange a parent and a i
-                Entry<Key, V> parentKey = a.get(parent);
-                Entry<Key, V> indexKey = a.get(index);
-                a.set(parent, indexKey);
-                a.set(index, parentKey);
-                indices.replace(indexKey.value, parent);
-                indices.replace(parentKey.value, index);
-                // update index and parent values
-                index = parent;
-                parent = (parent + 1) / 2 - 1;
-                finIndex = index;
-            }
+        while (index > 0 && arrayList.get(parent).key.compareTo(arrayList.get(index).key) > 0) {
+            //exchange the entry at parent and entry at index in arrayList and in indices
+            Entry<Key, V> parentKey = arrayList.get(parent);
+            Entry<Key, V> indexKey = arrayList.get(index);
+            arrayList.set(parent, indexKey);
+            arrayList.set(index, parentKey);
+            indices.replace(indexKey.value, parent);
+            indices.replace(parentKey.value, index);
+            // updates the index value
+            index = parent;
+            // calculates the new index of the parent of the current node,
+            // given the current node's index
+            Function<Integer, Integer> calculateParentIndex = (n) -> { return (n + 1) / 2 - 1; };
+            parent = calculateParentIndex.apply(index);
         }
-        return finIndex;
+        return index;
     }
 
     public void decreaseKey(V value, Key newKey) {
         if (!this.containsValue(value)) {
             throw new NoSuchElementException("value is not in the heap");
         }
-        int currIndex = indices.get(value);
-        if (currIndex >= a.size()) {
+        int index = indices.get(value);
+        if (index >= arrayList.size()) {
             throw new IllegalArgumentException();
         }
-        Key currKey = a.get(currIndex).key;
+        Key currKey = arrayList.get(index).key;
         if (newKey == null) {
             throw new IllegalArgumentException("newKey is null");
         }
         if (newKey.compareTo(currKey) > 0) {
             throw new IllegalArgumentException("newKey > key(value)");
         }
+
+        // update arraylist
+        arrayList.set(index, new Entry<Key, V>(newKey, value));
+        // calculates the new index of the parent of the current node,
+        // given the current node's index
+        Function<Integer, Integer> calculateParentIndex = (n) -> { return (n + 1) / 2 - 1; };
+        int parent = calculateParentIndex.apply(index);
+        // call helper function to place newKey in the right place
+        int finIndex = placeElementAtIndex(index, parent);
         int index = indices.get(value);
 
         // update arraylist
@@ -92,41 +124,48 @@ public class BinaryMinHeap<Key extends Comparable<Key>, V> {
     }
 
     public Entry<Key, V> extractMin() {
-        if (a.size() == 0) {
+        if (arrayList.size() == 0) {
             throw new NoSuchElementException("the min-heap is empty");
         }
-        Entry<Key, V> min = a.get(0);
-        int len = a.size();
-        Entry<Key, V> e = a.get(len - 1);
-        a.set(0, e);
-        a.set(len - 1, min);
-        a.remove(len - 1);
+        Entry<Key, V> min = arrayList.get(0);
+        int len = arrayList.size();
+        Entry<Key, V> lastEntry = arrayList.get(len - 1);
+        // swap the minimum Entry and last Entry
+        arrayList.set(0, lastEntry);
+        arrayList.set(len - 1, min);
+        // remove minimum element
+        arrayList.remove(len - 1);
         indices.remove(min.value);
-        indices.put(e.value, 0);
+        indices.put(lastEntry.value, 0);
+        // call minHeapify to maintain heap property
         minHeapify(0);
         return min;
     }
 
     private void minHeapify(int index) {
+        // calculate left and right children of the node at index, given that we are viewing the
+        // array as a nearly complete binary tree.
         int left = 2 * (index + 1) - 1;
         int right = 2 * (index + 1);
+        // find which element is the minimum.
         int minimum = left;
-        if (left < a.size() && a.get(left).key.compareTo(a.get(index).key) < 0) {
+        if (left < arrayList.size() && arrayList.get(left).key.compareTo(arrayList.get(index).key) < 0) {
             minimum = left;
         } else {
             minimum = index;
         }
-        if (right < a.size() && a.get(right).key.compareTo(a.get(minimum).key) < 0) {
+        if (right < arrayList.size() && arrayList.get(right).key.compareTo(arrayList.get(minimum).key) < 0) {
             minimum = right;
         }
         if (minimum != index) {
-            // exchange a(i) and a(largest)
-            Entry<Key, V> minimumKey = a.get(minimum);
-            Entry<Key, V> indexKey = a.get(index);
-            a.set(minimum, indexKey);
-            a.set(index, minimumKey);
+            // exchange minimum of the three elements with the element at index
+            Entry<Key, V> minimumKey = arrayList.get(minimum);
+            Entry<Key, V> indexKey = arrayList.get(index);
+            arrayList.set(minimum, indexKey);
+            arrayList.set(index, minimumKey);
             indices.replace(indexKey.value, minimum);
             indices.replace(minimumKey.value, index);
+            // recursively calling minHeapify - traversing down the heap and maintaining the heap property
             minHeapify(minimum);
         }
     }
