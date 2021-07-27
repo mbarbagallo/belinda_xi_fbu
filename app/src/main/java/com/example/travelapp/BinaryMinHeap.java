@@ -111,6 +111,13 @@ public class BinaryMinHeap<Key extends Comparable<Key>, V> {
         int parent = calculateParentIndex.apply(index);
         // call helper function to place newKey in the right place
         int finIndex = placeElementAtIndex(index, parent);
+        int index = indices.get(value);
+
+        // update arraylist
+        a.set(index, new Entry<Key, V>(newKey, value));
+        int parent = (index + 1) / 2 - 1;
+        // call helper function to place newKey in the right place
+        int finIndex = helperPlace(index, parent);
         // update indices hashmap
         indices.remove(value);
         indices.put(value, finIndex);

@@ -67,7 +67,6 @@ public class Dijkstras {
      * Computes the shortest path between two nodes in a weighted graph.
      * Input graph is guaranteed to be valid and have no negative-weighted edges.
      */
-
     public static List<Integer> getShortestPath(Graph graph, int src, int tgt) {
         List<Integer> list = new ArrayList<Integer>();
         if (src == tgt) {
