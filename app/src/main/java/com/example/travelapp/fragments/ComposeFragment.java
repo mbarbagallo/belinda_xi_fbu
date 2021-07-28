@@ -1,5 +1,6 @@
 package com.example.travelapp.fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -49,6 +51,7 @@ public class ComposeFragment extends Fragment {
     private EditText etMoreLocations;
     private EditText etTitle;
     private Button btnSubmit;
+    private ProgressBar progressBar;
     // list of location names
     private List<String> locations;
     // list of unique ids for each location
@@ -80,6 +83,7 @@ public class ComposeFragment extends Fragment {
         this.btnSubmit = view.findViewById(R.id.btnSubmit);
         this.rvMoreItems = view.findViewById(R.id.rvMoreItems);
         this.etTitle = view.findViewById(R.id.etTitle);
+        this.progressBar = view.findViewById(R.id.pbLoading);
         locations = new ArrayList<>();
         ids = new ArrayList<>();
 
@@ -133,12 +137,11 @@ public class ComposeFragment extends Fragment {
                     return;
                 }
                 ParseUser currentUser = ParseUser.getCurrentUser();
-                try {
-                    Itinerary itinerary = saveItinerary(currentUser);
+                try {saveItinerary(currentUser);
+                    etTitle.setText("");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-//                saveDetails(currentUser, itinerary);
             }
         });
 
@@ -158,11 +161,9 @@ public class ComposeFragment extends Fragment {
                 .apiKey(API_KEY)
                 .build();
         for (int i = 0; i < listNodesInt.size(); i++) {
-            // get node number at position i
-            int nodeNumber = listNodesInt.get(i);
             if (i != listNodesInt.size() - 1) {
                 // get distance between location i and i + 1
-                Distance distance = itinerary.getDistance(ids.get(nodeNumber), ids.get(nodeNumber + 1), mGeoApiContext);
+                Distance distance = itinerary.getDistance(ids.get(listNodesInt.get(i)), ids.get(listNodesInt.get(i + 1)), mGeoApiContext);
                 // add distance String to listDistances
                 String distanceMiles = distance.humanReadable;
                 listDistances.add(distanceMiles);
@@ -171,7 +172,7 @@ public class ComposeFragment extends Fragment {
                 totalDistance += distanceValue;
             }
             // add location String name to listNodesNames
-            listNodesNames.add(locations.get(nodeNumber));
+            listNodesNames.add(locations.get(listNodesInt.get(i)));
         }
         // round totalDistance to 1 digit
         totalDistance = Math.round(totalDistance * 10) / 10.0;
@@ -184,14 +185,14 @@ public class ComposeFragment extends Fragment {
     }
 
     private Itinerary saveItinerary(ParseUser currentUser) throws InterruptedException {
+        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setBackgroundColor(Color.BLACK);
         Itinerary itinerary = new Itinerary();
         GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
                 .apiKey(API_KEY)
                 .build();
         itinerary.setLocations(locations);
         itinerary.setTitle(etTitle.getText().toString());
-        // testing that getDistance works by getting distance between first two locations
-        Distance distance = itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
         // TODO - save details
@@ -210,6 +211,7 @@ public class ComposeFragment extends Fragment {
                 moreItemsAdapter.notifyDataSetChanged();
             }
         });
+        progressBar.setVisibility(ProgressBar.INVISIBLE);
         return itinerary;
     }
 }
