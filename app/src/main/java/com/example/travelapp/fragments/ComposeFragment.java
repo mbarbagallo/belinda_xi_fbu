@@ -2,6 +2,7 @@ package com.example.travelapp.fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.travelapp.BuildConfig;
 import com.example.travelapp.Details;
 import com.example.travelapp.Itinerary;
+import com.example.travelapp.MainActivity;
 import com.example.travelapp.MoreItemsAdapter;
 import com.example.travelapp.R;
 import com.google.android.gms.common.api.Status;
@@ -51,7 +53,6 @@ public class ComposeFragment extends Fragment {
     private EditText etMoreLocations;
     private EditText etTitle;
     private Button btnSubmit;
-    private ProgressBar progressBar;
     // list of location names
     private List<String> locations;
     // list of unique ids for each location
@@ -62,6 +63,7 @@ public class ComposeFragment extends Fragment {
     public String placeId;
     private static final int firstPreference = 0;
     private static final int secondPreference = 1;
+    private MainActivity mainActivity;
 
     public ComposeFragment() {
         // Required empty public constructor
@@ -83,7 +85,7 @@ public class ComposeFragment extends Fragment {
         this.btnSubmit = view.findViewById(R.id.btnSubmit);
         this.rvMoreItems = view.findViewById(R.id.rvMoreItems);
         this.etTitle = view.findViewById(R.id.etTitle);
-        this.progressBar = view.findViewById(R.id.pbLoading);
+        this.mainActivity = (MainActivity) getActivity();
         locations = new ArrayList<>();
         ids = new ArrayList<>();
 
@@ -136,12 +138,22 @@ public class ComposeFragment extends Fragment {
                     Toast.makeText(getContext(), "must enter at least 2 locations!", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                mainActivity.showProgressBar();
+
                 ParseUser currentUser = ParseUser.getCurrentUser();
-                try {saveItinerary(currentUser);
-                    etTitle.setText("");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                // delay the handler by 1 second (1000 milliseconds) so that progress circle shows for longer
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            saveItinerary(currentUser);
+                            etTitle.setText("");
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, 1000);
             }
         });
 
@@ -185,8 +197,6 @@ public class ComposeFragment extends Fragment {
     }
 
     private Itinerary saveItinerary(ParseUser currentUser) throws InterruptedException {
-        progressBar.setVisibility(View.VISIBLE);
-        progressBar.setBackgroundColor(Color.BLACK);
         Itinerary itinerary = new Itinerary();
         GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
                 .apiKey(API_KEY)
@@ -209,9 +219,9 @@ public class ComposeFragment extends Fragment {
                 locations.clear();
                 ids.clear();
                 moreItemsAdapter.notifyDataSetChanged();
+                mainActivity.hideProgressBar();
             }
         });
-        progressBar.setVisibility(ProgressBar.INVISIBLE);
         return itinerary;
     }
 }

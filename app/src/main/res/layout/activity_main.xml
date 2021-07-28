@@ -6,6 +6,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#FFFFFF">
 
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminate="true"
+        android:visibility="invisible" />
+
     <FrameLayout
         android:id="@+id/flContainer"
         android:layout_width="match_parent"
@@ -19,6 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:menu="@menu/menu_bottom_navigation" />
+
 
 </RelativeLayout>
     <?xml version="1.0" encoding="utf-8"?>
