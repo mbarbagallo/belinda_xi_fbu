@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -220,6 +221,7 @@ public class ComposeFragment extends Fragment {
                 ids.clear();
                 moreItemsAdapter.notifyDataSetChanged();
                 mainActivity.hideProgressBar();
+                mainActivity.switchToHomeFragment();
             }
         });
         return itinerary;

@@ -1,57 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fragmentCompose"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMoreItems"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_below="@+id/autocomplete_fragment"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="30dp" />
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btnAdd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/etTitle"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="30dp"
-        android:layout_toEndOf="@+id/autocomplete_fragment"
-        android:text="Add" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMoreItems"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_below="@+id/autocomplete_fragment"
+            android:layout_centerHorizontal="true"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="30dp" />
 
-    <Button
-        android:id="@+id/btnSubmit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/rvMoreItems"
-        android:layout_alignParentBottom="false"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:text="submit" />
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/etTitle"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="30dp"
+            android:layout_toEndOf="@+id/autocomplete_fragment"
+            android:text="Add" />
 
-    <fragment
-        android:id="@+id/autocomplete_fragment"
-        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/etTitle"
-        android:layout_marginLeft="60dp"
-        android:layout_marginTop="30dp"></fragment>
+        <Button
+            android:id="@+id/btnSubmit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/rvMoreItems"
+            android:layout_alignParentBottom="false"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:text="submit" />
 
-    <EditText
-        android:id="@+id/etTitle"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="false"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:ellipsize="end"
-        android:hint="Enter Title"
-        android:maxLines="1" />
+        <fragment
+            android:id="@+id/autocomplete_fragment"
+            android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/etTitle"
+            android:layout_marginLeft="60dp"
+            android:layout_marginTop="30dp"></fragment>
 
-</RelativeLayout>
+        <EditText
+            android:id="@+id/etTitle"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:ellipsize="end"
+            android:hint="Enter Title"
+            android:maxLines="1" />
+
+    </RelativeLayout>
+</FrameLayout>
