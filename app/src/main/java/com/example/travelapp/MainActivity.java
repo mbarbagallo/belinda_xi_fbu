@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.travelapp.fragments.ComposeFragment;
@@ -22,6 +23,7 @@ import com.parse.ParseUser;
 public class MainActivity extends AppCompatActivity {
 
     private Button btnLogOut;
+    private ProgressBar pbLoading;
     private BottomNavigationView bottomNavigationView;
 
 
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.bottomNavigationView = findViewById(R.id.bottom_navigation);
+        this.pbLoading = findViewById(R.id.pbLoading);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -61,5 +64,13 @@ public class MainActivity extends AppCompatActivity {
         });
         bottomNavigationView.setSelectedItemId(R.id.action_home);
 
+    }
+
+    public void showProgressBar() {
+        pbLoading.setVisibility(View.VISIBLE);
+    }
+
+    public void hideProgressBar() {
+        pbLoading.setVisibility(View.INVISIBLE);
     }
 }

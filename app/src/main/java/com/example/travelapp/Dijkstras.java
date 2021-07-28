@@ -29,6 +29,7 @@ public class Dijkstras {
                 .apiKey(API_KEY)
                 .build();
         int totalDistance = 0;
+        int maxDistance = 0;
         Graph graph = new Graph(ids.size());
         // calculating totalDistance
         for (int i = 0; i < ids.size(); i++) {
@@ -41,23 +42,33 @@ public class Dijkstras {
                 int currentDistanceJI =
                         (int) itinerary.getDistance(ids.get(j), ids.get(i), mGeoApiContext).inMeters;
                 totalDistance += currentDistanceJI;
+                // check max distance
+                if (currentDistanceIJ > maxDistance) {
+                    maxDistance = currentDistanceIJ;
+                }
+                if (currentDistanceJI > maxDistance) {
+                    maxDistance = currentDistanceJI;
+                }
             }
         }
-        int interval = totalDistance / (ids.size() * 2);
         for (int i = 0; i < ids.size(); i++) {
             for (int j = i + 1; j < ids.size(); j++) {
                 if ((i == 0 && j == 1) || (i == 1 && j == 0)) {
                     continue;
                 }
-                int factor = i + j;
                 // directions from i to j
                 int currentDistanceIJ =
                         (int) itinerary.getDistance(ids.get(i), ids.get(j), mGeoApiContext).inMeters;
-                graph.addEdge(i, j, currentDistanceIJ + factor * interval);
+                // normalize weight of distance by dividing it by maxDistance so that it is <= 1
+                double distanceWeightIJ = (double) currentDistanceIJ / maxDistance;
+                double preferenceWeight = (double) (i + j) / (ids.size() * 2.0);
+                graph.addEdge(i, j, distanceWeightIJ + preferenceWeight);
                 // directions from j to i
                 int currentDistanceJI =
                         (int) itinerary.getDistance(ids.get(j), ids.get(i), mGeoApiContext).inMeters;
-                graph.addEdge(j, i, currentDistanceJI + factor * interval);
+                // normalize weight of distance by dividing it by maxDistance so that it is <= 1
+                double distanceWeightJI = currentDistanceJI / maxDistance;
+                graph.addEdge(j, i, distanceWeightJI + preferenceWeight);
             }
         }
         return graph;
@@ -69,12 +80,18 @@ public class Dijkstras {
      */
     public static List<Integer> getShortestPath(Graph graph, int src, int tgt) {
         List<Integer> list = new ArrayList<Integer>();
+        // hard coded base case of size = 2 since no edge between 0 and 1 is added in the graph.
+        if (graph.getSize() == 2) {
+            list.add(0);
+            list.add(1);
+            return list;
+        }
         if (src == tgt) {
             list.add(src);
             return list;
         }
         int size = graph.getSize();
-        int[] dist = new int[size];
+        double[] dist = new double[size];
         // array mapping indices to the Integer representing the node that's the parent of the index
         Integer[] parent = new Integer[size];
         // initially setting all the distances of nodes to be the max value
@@ -82,7 +99,7 @@ public class Dijkstras {
             dist[i] = Integer.MAX_VALUE;
         }
         dist[src] = 0;
-        BinaryMinHeap<Integer, Integer> binaryMinHeap = new BinaryMinHeap<Integer, Integer>();
+        BinaryMinHeap<Double, Integer> binaryMinHeap = new BinaryMinHeap<Double, Integer>();
         for (int i = 0; i < size; i++) {
             binaryMinHeap.add(dist[i], i);
         }
@@ -90,7 +107,7 @@ public class Dijkstras {
             int u = binaryMinHeap.extractMin().getValue();
             for (int v : graph.outNeighbors(u)) {
                 // edge relaxation
-                if (dist[v] == Integer.MAX_VALUE || dist[v] > dist[u] + graph.getWeight(u, v)) {
+                if (dist[v] == Double.MAX_VALUE || dist[v] > dist[u] + graph.getWeight(u, v)) {
                     dist[v] = dist[u] + graph.getWeight(u, v);
                     if (binaryMinHeap.containsValue(v)) {
                         // decrease key

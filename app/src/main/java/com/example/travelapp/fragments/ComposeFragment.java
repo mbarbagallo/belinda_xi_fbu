@@ -1,12 +1,15 @@
 package com.example.travelapp.fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.travelapp.BuildConfig;
 import com.example.travelapp.Details;
 import com.example.travelapp.Itinerary;
+import com.example.travelapp.MainActivity;
 import com.example.travelapp.MoreItemsAdapter;
 import com.example.travelapp.R;
 import com.google.android.gms.common.api.Status;
@@ -59,6 +63,7 @@ public class ComposeFragment extends Fragment {
     public String placeId;
     private static final int firstPreference = 0;
     private static final int secondPreference = 1;
+    private MainActivity mainActivity;
 
     public ComposeFragment() {
         // Required empty public constructor
@@ -80,6 +85,7 @@ public class ComposeFragment extends Fragment {
         this.btnSubmit = view.findViewById(R.id.btnSubmit);
         this.rvMoreItems = view.findViewById(R.id.rvMoreItems);
         this.etTitle = view.findViewById(R.id.etTitle);
+        this.mainActivity = (MainActivity) getActivity();
         locations = new ArrayList<>();
         ids = new ArrayList<>();
 
@@ -132,13 +138,22 @@ public class ComposeFragment extends Fragment {
                     Toast.makeText(getContext(), "must enter at least 2 locations!", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                mainActivity.showProgressBar();
+
                 ParseUser currentUser = ParseUser.getCurrentUser();
-                try {
-                    Itinerary itinerary = saveItinerary(currentUser);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-//                saveDetails(currentUser, itinerary);
+                // delay the handler by 1 second (1000 milliseconds) so that progress circle shows for longer
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            saveItinerary(currentUser);
+                            etTitle.setText("");
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, 1000);
             }
         });
 
@@ -158,11 +173,9 @@ public class ComposeFragment extends Fragment {
                 .apiKey(API_KEY)
                 .build();
         for (int i = 0; i < listNodesInt.size(); i++) {
-            // get node number at position i
-            int nodeNumber = listNodesInt.get(i);
             if (i != listNodesInt.size() - 1) {
                 // get distance between location i and i + 1
-                Distance distance = itinerary.getDistance(ids.get(nodeNumber), ids.get(nodeNumber + 1), mGeoApiContext);
+                Distance distance = itinerary.getDistance(ids.get(listNodesInt.get(i)), ids.get(listNodesInt.get(i + 1)), mGeoApiContext);
                 // add distance String to listDistances
                 String distanceMiles = distance.humanReadable;
                 listDistances.add(distanceMiles);
@@ -171,7 +184,7 @@ public class ComposeFragment extends Fragment {
                 totalDistance += distanceValue;
             }
             // add location String name to listNodesNames
-            listNodesNames.add(locations.get(nodeNumber));
+            listNodesNames.add(locations.get(listNodesInt.get(i)));
         }
         // round totalDistance to 1 digit
         totalDistance = Math.round(totalDistance * 10) / 10.0;
@@ -190,8 +203,6 @@ public class ComposeFragment extends Fragment {
                 .build();
         itinerary.setLocations(locations);
         itinerary.setTitle(etTitle.getText().toString());
-        // testing that getDistance works by getting distance between first two locations
-        Distance distance = itinerary.getDistance(ids.get(0), ids.get(1), mGeoApiContext);
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
         // TODO - save details
@@ -208,6 +219,7 @@ public class ComposeFragment extends Fragment {
                 locations.clear();
                 ids.clear();
                 moreItemsAdapter.notifyDataSetChanged();
+                mainActivity.hideProgressBar();
             }
         });
         return itinerary;

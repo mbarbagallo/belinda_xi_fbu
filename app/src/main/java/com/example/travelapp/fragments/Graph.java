@@ -8,15 +8,15 @@ import java.util.Map;
 
 public class Graph {
 
-    HashMap<Integer, Integer>[] arr;
+    HashMap<Integer, Double>[] arr;
 
     public Graph(int vertices) {
         if (vertices <= 0) {
             throw new IllegalArgumentException();
         }
-        arr = (HashMap<Integer, Integer>[]) new HashMap[vertices];
+        arr = (HashMap<Integer, Double>[]) new HashMap[vertices];
         for (int i = 0; i < vertices; i ++) {
-            arr[i] = new HashMap<Integer, Integer>();
+            arr[i] = new HashMap<Integer, Double>();
         }
     }
 
@@ -44,7 +44,7 @@ public class Graph {
 
 //    Returns the weight of an the directed edge u-v.
 
-    public int getWeight(int u, int v) {
+    public double getWeight(int u, int v) {
         if (arr == null) {
             throw new IllegalArgumentException();
         }
@@ -61,7 +61,7 @@ public class Graph {
 //     Creates an edge u-v if it does not already exist. Does not modify the edge weight
 //     if u-v already exists.
 
-    public boolean addEdge(int u, int v, int weight) {
+    public boolean addEdge(int u, int v, double weight) {
         if (arr == null) {
             throw new IllegalArgumentException();
         }
@@ -87,7 +87,7 @@ public class Graph {
             throw new IllegalArgumentException();
         }
         Set<Integer> out = new HashSet<Integer>();
-        for (Map.Entry<Integer, Integer> e : arr[v].entrySet()) {
+        for (Map.Entry<Integer, Double> e : arr[v].entrySet()) {
             out.add(e.getKey());
         }
         return out;
