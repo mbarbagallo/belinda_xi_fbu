@@ -101,9 +101,9 @@ public class Dijkstras {
             return list;
         }
         int size = graph.getSize();
-        // switched distance to a double since with the new graph, normalizing the weights makes it
-        // so that many weights are less than 1, so continuing to use int[] made them round to 0
-        // and caused issues, while using a double would resolve these.
+        // dist array is a double because when creating the graph, normalizing the weights makes it
+        // so that many weights are less than 1, so using int[] would make the weights round to 0
+        // and cause issues, while using a double would resolve these.
         double[] dist = new double[size];
         // array mapping indices to the Integer representing the node that's the parent of the index
         Integer[] parent = new Integer[size];

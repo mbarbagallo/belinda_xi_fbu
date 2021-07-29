@@ -168,12 +168,7 @@ public class ComposeFragment extends Fragment {
         // create graph and call algorithm to determine path
         Graph graph = createGraph(ids, itinerary, visitAll);
         // list that stores the indices of locations in order of traversal from locations list
-        List<Integer> listNodesInt;
-        if (visitAll) {
-            listNodesInt = findShortestPathAllVertices(graph);
-        } else {
-            listNodesInt = getShortestPath(graph, firstPreference, secondPreference);
-        }
+        List<Integer> listNodesInt = visitAll ? findShortestPathAllVertices(graph) : getShortestPath(graph, firstPreference, secondPreference);
         // list that stores names of locations in order of traversal
         List<String> listNodesNames = new ArrayList<>();
         // list that stores distances between locations

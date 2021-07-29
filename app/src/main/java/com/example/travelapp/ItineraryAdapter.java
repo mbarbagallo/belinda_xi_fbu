@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -50,6 +51,13 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
     @Override
     public int getItemCount() {
         return itineraries.size();
+    }
+
+    public void deleteItem(int position) {
+        Itinerary deletedItinerary = itineraries.get(position);
+        itineraries.remove(position);
+        notifyItemRemoved(position);
+        deleteInParse(deletedItinerary.getObjectId());
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
