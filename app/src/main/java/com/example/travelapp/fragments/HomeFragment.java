@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import com.example.travelapp.R;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
+import com.yalantis.phoenix.PullToRefreshView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,7 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvItineraries;
     protected List<Itinerary> allItineraries;
     protected ItineraryAdapter adapter;
+    private PullToRefreshView pullToRefreshView;
     public static final String TAG = "HomeFragment";
 
     public HomeFragment() {
@@ -50,6 +53,26 @@ public class HomeFragment extends Fragment {
         adapter = new ItineraryAdapter(getContext(), allItineraries);
         rvItineraries.setAdapter(adapter);
         rvItineraries.setLayoutManager(new LinearLayoutManager(getContext()));
+        queryItineraries();
+        pullToRefreshView = (PullToRefreshView) view.findViewById(R.id.pull_to_refresh);
+        pullToRefreshView.setOnRefreshListener(new PullToRefreshView.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                pullToRefreshView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        fetchTimelineAsync();
+                        pullToRefreshView.setRefreshing(false);
+                    }
+                }, 1000);
+            }
+        });
+    }
+
+    private void fetchTimelineAsync() {
+        // clear out old itineraries
+        adapter.clear();
+        // query new itineraries
         queryItineraries();
     }
 

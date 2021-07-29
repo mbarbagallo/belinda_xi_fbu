@@ -1,6 +1,7 @@
 package com.example.travelapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,7 @@ import com.example.travelapp.fragments.DetailsFragment;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.util.List;
@@ -78,7 +80,6 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
         public void bind(Itinerary itinerary) {
             tvTitle.setText(itinerary.getTitle());
             tvLocations.setText(itinerary.getLocations());
-            // TODO - temporary distance - change once done w algo
             tvDistance.setText(itinerary.getTotalDistance());
             ParseFile image = itinerary.getImage();
             if (image != null) {
@@ -110,4 +111,38 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
             });
         }
     }
+
+    private void deleteInParse(String objectId) {
+        ParseQuery<Itinerary> query = ParseQuery.getQuery(Itinerary.class);
+        query.whereEqualTo("objectId", objectId);
+        query.findInBackground(new FindCallback<Itinerary>() {
+            @Override
+            public void done(List<Itinerary> results, ParseException e) {
+                if (e == null) {
+                    if (e != null) {
+                        Log.e(TAG, "Issue with getting itinerary to be deleted", e);
+                        return;
+                    }
+                    if (results.size() != 1) {
+                        Log.e(TAG, "We only should be deleting one itinerary!");
+                        return;
+                    }
+                    results.get(0).deleteInBackground();
+                }
+            }
+        });
+    }
+
+    // Clean all elements of the RV
+    public void clear() {
+        itineraries.clear();
+        notifyDataSetChanged();
+    }
+
+    // Add a list of itineraries
+    public void addAll(List<Itinerary> list) {
+        itineraries.addAll(list);
+        notifyDataSetChanged();
+    }
+
 }

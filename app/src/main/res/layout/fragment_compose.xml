@@ -30,10 +30,10 @@
             android:id="@+id/btnSubmit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/rvMoreItems"
+            android:layout_below="@+id/switchMustVisitAll"
             android:layout_alignParentBottom="false"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="15dp"
             android:text="submit" />
 
         <fragment
@@ -56,6 +56,15 @@
             android:ellipsize="end"
             android:hint="Enter Title"
             android:maxLines="1" />
+
+        <Switch
+            android:id="@+id/switchMustVisitAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/rvMoreItems"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:text="must visit all locations" />
 
     </RelativeLayout>
 </FrameLayout>

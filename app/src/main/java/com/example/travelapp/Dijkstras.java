@@ -24,7 +24,7 @@ public class Dijkstras {
     private static final String TAG = "Dijkstras";
 
     // TODO - check max number of google maps api calls
-    public static Graph createGraph(List<String> ids, Itinerary itinerary) throws InterruptedException {
+    public static Graph createGraph(List<String> ids, Itinerary itinerary, boolean visitAll) throws InterruptedException {
         GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
                 .apiKey(API_KEY)
                 .build();
@@ -42,7 +42,9 @@ public class Dijkstras {
                 int currentDistanceJI =
                         (int) itinerary.getDistance(ids.get(j), ids.get(i), mGeoApiContext).inMeters;
                 totalDistance += currentDistanceJI;
-                // check max distance
+                // check max distance - must check both distance currentDistanceIJ and
+                // currentDistanceJI since the length of the route from i -> j isn't always the
+                // same as the length of the route from j -> i.
                 if (currentDistanceIJ > maxDistance) {
                     maxDistance = currentDistanceIJ;
                 }
@@ -53,15 +55,22 @@ public class Dijkstras {
         }
         for (int i = 0; i < ids.size(); i++) {
             for (int j = i + 1; j < ids.size(); j++) {
-                if ((i == 0 && j == 1) || (i == 1 && j == 0)) {
-                    continue;
+                if (!visitAll) {
+                    if ((i == 0 && j == 1) || (i == 1 && j == 0)) {
+                        continue;
+                    }
                 }
                 // directions from i to j
                 int currentDistanceIJ =
                         (int) itinerary.getDistance(ids.get(i), ids.get(j), mGeoApiContext).inMeters;
                 // normalize weight of distance by dividing it by maxDistance so that it is <= 1
                 double distanceWeightIJ = (double) currentDistanceIJ / maxDistance;
-                double preferenceWeight = (double) (i + j) / (ids.size() * 2.0);
+                double preferenceWeight = 0.0;
+                if (!visitAll) {
+                    // normalize weight of preference by dividing it by twice the size since the max
+                    // that i + j can be is approximately ids.size() * 2.0.
+                    preferenceWeight = (double) (i + j) / (ids.size() * 2.0);
+                }
                 graph.addEdge(i, j, distanceWeightIJ + preferenceWeight);
                 // directions from j to i
                 int currentDistanceJI =
@@ -79,18 +88,22 @@ public class Dijkstras {
      * Input graph is guaranteed to be valid and have no negative-weighted edges.
      */
     public static List<Integer> getShortestPath(Graph graph, int src, int tgt) {
-        List<Integer> list = new ArrayList<Integer>();
-        // hard coded base case of size = 2 since no edge between 0 and 1 is added in the graph.
-        if (graph.getSize() == 2) {
-            list.add(0);
-            list.add(1);
-            return list;
-        }
+        List<Integer> list = new ArrayList<>();
+        // hard coded base case of size 1
         if (src == tgt) {
             list.add(src);
             return list;
         }
+        // hard coded base case of size = 2 since no edge between 0 and 1 is added in the graph.
+        if (graph.getSize() == 2) {
+            list.add(src);
+            list.add(tgt);
+            return list;
+        }
         int size = graph.getSize();
+        // switched distance to a double since with the new graph, normalizing the weights makes it
+        // so that many weights are less than 1, so continuing to use int[] made them round to 0
+        // and caused issues, while using a double would resolve these.
         double[] dist = new double[size];
         // array mapping indices to the Integer representing the node that's the parent of the index
         Integer[] parent = new Integer[size];
@@ -142,6 +155,75 @@ public class Dijkstras {
         list.add(src);
         Collections.reverse(list);
         return list;
+    }
+
+    public static ArrayList<Integer> findShortestPathAllVertices(Graph graph) {
+        int graphSize = graph.getSize();
+        ArrayList<Integer> shortestPath = new ArrayList<Integer>();
+
+        // array of numbers corresponding to vertices of Graph - from 1 to graphSize - 1
+        // excludes 0 since we always start and come back to node 0 at the end.
+        int[] numbers = new int[graphSize-1];
+        for (int i = 1; i < graphSize; i++) {
+            shortestPath.add(0);
+            numbers[i - 1] = i;
+        }
+
+        int minDistance = Integer.MAX_VALUE;
+        // list containing all different possible paths - every possible permutation of nodes
+        ArrayList<ArrayList<Integer>> paths = permute(numbers);
+
+        for (ArrayList<Integer> path : paths) {
+            int currDistance = 0;
+            // initially set to 0 since we start the path at node 0
+            int nodeNumber = 0;
+            // compute current path weight
+            for (int i = 0; i < path.size(); i++) {
+                currDistance += graph.getWeight(nodeNumber, path.get(i));
+                nodeNumber = path.get(i);
+            }
+            // adding the edge to complete the loop and go back to node 0
+            currDistance += graph.getWeight(nodeNumber, 0);
+            // updates minDistance if we find a new smaller minimum
+            if (minDistance > currDistance) {
+                Collections.copy(shortestPath, path);
+                minDistance = currDistance;
+            }
+        }
+
+        // Add the start node, 0, to the beginning and the end of the path
+        shortestPath.add(0, 0);
+        shortestPath.add(0);
+
+        return shortestPath;
+    }
+
+    public static ArrayList<ArrayList<Integer>> permute(int[] numbers) {
+        ArrayList<ArrayList<Integer>> permutations = new ArrayList<ArrayList<Integer>>();
+
+        // start with adding empty list
+        permutations.add(new ArrayList<Integer>());
+
+        // For each iteration, a new number will be added to build the list representing the permutation
+        for (int i = 0; i < numbers.length; i++) {
+            // List of list to be built in current iteration
+            ArrayList<ArrayList<Integer>> currList = new ArrayList<ArrayList<Integer>>();
+
+            // for each ArrayList in permutations, create new ArrayLists that add the new number to each
+            // possible location to add a number to in the list (size + 1 total slots)
+            for (ArrayList<Integer> numList : permutations) {
+                for (int j = 0; j < numList.size() + 1; j++) {
+
+                    // create new ArrayList temp, insert current i to create new permutation, and
+                    // add this list to result
+                    ArrayList<Integer> temp = new ArrayList<Integer>(numList);
+                    temp.add(j, numbers[i]);
+                    currList.add(temp);
+                }
+            }
+            permutations = new ArrayList<ArrayList<Integer>>(currList);
+        }
+        return permutations;
     }
 
 }
