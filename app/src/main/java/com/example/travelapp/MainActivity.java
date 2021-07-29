@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,11 +26,12 @@ public class MainActivity extends AppCompatActivity {
     private Button btnLogOut;
     private ProgressBar pbLoading;
     private BottomNavigationView bottomNavigationView;
+    final FragmentManager fragmentManager = getSupportFragmentManager();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final FragmentManager fragmentManager = getSupportFragmentManager();
+//        final FragmentManager fragmentManager = getSupportFragmentManager();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -72,5 +74,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void hideProgressBar() {
         pbLoading.setVisibility(View.INVISIBLE);
+    }
+
+    public void switchToHomeFragment() {
+        HomeFragment fragment = new HomeFragment();
+        fragmentManager.beginTransaction().replace(R.id.fragmentCompose, fragment).commit();
     }
 }

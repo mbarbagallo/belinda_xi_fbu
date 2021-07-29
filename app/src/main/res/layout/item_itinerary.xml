@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/frontLayout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    android:longClickable="true">
 
     <ImageView
         android:id="@+id/ivPhoto"
@@ -28,6 +33,8 @@
         android:layout_marginEnd="10dp"
         android:layout_toStartOf="@+id/tvDistance"
         android:layout_toEndOf="@+id/ivPhoto"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         tools:text="Summer Road Trip" />
 
@@ -48,11 +55,12 @@
     <TextView
         android:id="@+id/tvDistance"
         android:layout_width="50dp"
-        android:layout_height="wrap_content"
+        android:layout_height="85dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="0dp"
         android:layout_marginEnd="5dp"
+        android:paddingVertical="15dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         tools:text="500 miles" />
 </RelativeLayout>

@@ -10,10 +10,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,6 +44,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.example.travelapp.Dijkstras.createGraph;
+import static com.example.travelapp.Dijkstras.findShortestPathAllVertices;
 import static com.example.travelapp.Dijkstras.getShortestPath;
 
 public class ComposeFragment extends Fragment {
@@ -53,6 +56,7 @@ public class ComposeFragment extends Fragment {
     private EditText etMoreLocations;
     private EditText etTitle;
     private Button btnSubmit;
+    private Switch switchVisitAll;
     // list of location names
     private List<String> locations;
     // list of unique ids for each location
@@ -85,6 +89,7 @@ public class ComposeFragment extends Fragment {
         this.btnSubmit = view.findViewById(R.id.btnSubmit);
         this.rvMoreItems = view.findViewById(R.id.rvMoreItems);
         this.etTitle = view.findViewById(R.id.etTitle);
+        this.switchVisitAll = view.findViewById(R.id.switchMustVisitAll);
         this.mainActivity = (MainActivity) getActivity();
         locations = new ArrayList<>();
         ids = new ArrayList<>();
@@ -147,7 +152,7 @@ public class ComposeFragment extends Fragment {
                     @Override
                     public void run() {
                         try {
-                            saveItinerary(currentUser);
+                            saveItinerary(currentUser, switchVisitAll.isChecked());
                             etTitle.setText("");
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -159,11 +164,16 @@ public class ComposeFragment extends Fragment {
 
     }
 
-    private Details saveDetails(ParseUser currentUser, Itinerary itinerary) throws InterruptedException {
+    private Details saveDetails(ParseUser currentUser, Itinerary itinerary, boolean visitAll) throws InterruptedException {
         // create graph and call algorithm to determine path
-        Graph graph = createGraph(ids, itinerary);
+        Graph graph = createGraph(ids, itinerary, visitAll);
         // list that stores the indices of locations in order of traversal from locations list
-        List<Integer> listNodesInt = getShortestPath(graph, firstPreference, secondPreference);
+        List<Integer> listNodesInt;
+        if (visitAll) {
+            listNodesInt = findShortestPathAllVertices(graph);
+        } else {
+            listNodesInt = getShortestPath(graph, firstPreference, secondPreference);
+        }
         // list that stores names of locations in order of traversal
         List<String> listNodesNames = new ArrayList<>();
         // list that stores distances between locations
@@ -196,7 +206,7 @@ public class ComposeFragment extends Fragment {
         return details;
     }
 
-    private Itinerary saveItinerary(ParseUser currentUser) throws InterruptedException {
+    private Itinerary saveItinerary(ParseUser currentUser, boolean visitAll) throws InterruptedException {
         Itinerary itinerary = new Itinerary();
         GeoApiContext mGeoApiContext = new GeoApiContext.Builder()
                 .apiKey(API_KEY)
@@ -205,8 +215,7 @@ public class ComposeFragment extends Fragment {
         itinerary.setTitle(etTitle.getText().toString());
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
-        // TODO - save details
-        itinerary.setDetails(saveDetails(currentUser, itinerary));
+        itinerary.setDetails(saveDetails(currentUser, itinerary, visitAll));
         itinerary.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -220,6 +229,7 @@ public class ComposeFragment extends Fragment {
                 ids.clear();
                 moreItemsAdapter.notifyDataSetChanged();
                 mainActivity.hideProgressBar();
+                mainActivity.switchToHomeFragment();
             }
         });
         return itinerary;
