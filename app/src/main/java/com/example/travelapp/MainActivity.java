@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -74,5 +75,23 @@ public class MainActivity extends AppCompatActivity {
     public void switchToHomeFragment() {
         HomeFragment fragment = new HomeFragment();
         fragmentManager.beginTransaction().replace(R.id.fragmentCompose, fragment).commit();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.logOut) {
+            ParseUser.logOut();
+            // go back to login screen
+            Intent i = new Intent(this, LogInActivity.class);
+            startActivity(i);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

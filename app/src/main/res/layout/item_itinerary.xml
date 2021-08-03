@@ -19,6 +19,7 @@
         android:layout_marginStart="5dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
+        android:scaleType="centerCrop"
         app:srcCompat="@drawable/temporary_travel_image"
         tools:layout_editor_absoluteX="47dp"
         tools:layout_editor_absoluteY="34dp" />
