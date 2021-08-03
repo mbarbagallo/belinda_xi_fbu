@@ -14,10 +14,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.travelapp.Details;
 import com.example.travelapp.DetailsAdapter;
 import com.example.travelapp.Itinerary;
 import com.example.travelapp.R;
+import com.parse.ParseFile;
 
 import java.util.List;
 
@@ -69,5 +71,9 @@ public class DetailsFragment extends Fragment {
         rvDetails.setAdapter(adapter);
         rvDetails.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        ParseFile image = itinerary.getImage();
+        if (image != null) {
+            Glide.with(getContext()).load(image.getUrl()).into(ivPhotoDetails);
+        }
     }
 }
