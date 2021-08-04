@@ -217,8 +217,8 @@ public class ComposeFragment extends Fragment {
         itinerary.setTitle(etTitle.getText().toString());
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
-        setItineraryPhoto(itinerary);
         itinerary.setDetails(saveDetails(currentUser, itinerary, visitAll));
+        setItineraryPhoto(itinerary);
         itinerary.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {

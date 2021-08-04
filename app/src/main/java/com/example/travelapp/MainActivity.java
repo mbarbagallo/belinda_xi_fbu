@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     public void switchToHomeFragment() {
         HomeFragment fragment = new HomeFragment();
         fragmentManager.beginTransaction().replace(R.id.fragmentCompose, fragment).commit();
+        currentFragment = fragment;
     }
 
     @Override
