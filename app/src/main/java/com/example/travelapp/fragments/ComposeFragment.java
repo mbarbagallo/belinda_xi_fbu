@@ -217,8 +217,8 @@ public class ComposeFragment extends Fragment {
         itinerary.setTitle(etTitle.getText().toString());
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
-        setItineraryPhoto(itinerary);
         itinerary.setDetails(saveDetails(currentUser, itinerary, visitAll));
+        setItineraryPhoto(itinerary);
         itinerary.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -231,8 +231,6 @@ public class ComposeFragment extends Fragment {
                 locations.clear();
                 ids.clear();
                 moreItemsAdapter.notifyDataSetChanged();
-                mainActivity.hideProgressBar();
-                mainActivity.switchToHomeFragment();
             }
         });
         return itinerary;
@@ -270,7 +268,18 @@ public class ComposeFragment extends Fragment {
                     // Save image to Parse
                     ParseFile image = new ParseFile("photo.jpeg", scaledData);
                     itinerary.setImage(image);
-                    itinerary.saveInBackground();
+                    itinerary.saveInBackground(new SaveCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            if (e != null) {
+                                Log.e(TAG, "couldn't save");
+                                return;
+                            }
+                            // once image is saved to itinerary, then switch to home
+                            mainActivity.hideProgressBar();
+                            mainActivity.switchToHomeFragment();
+                        }
+                    });
                 }).addOnFailureListener((exception) -> {
                     if (exception instanceof ApiException) {
                         final ApiException apiException = (ApiException) exception;

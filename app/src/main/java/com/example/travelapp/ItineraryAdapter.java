@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.travelapp.fragments.DetailsFragment;
+import com.example.travelapp.fragments.HomeFragment;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -77,8 +78,14 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
                     Log.i(TAG, "long click");
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                        Itinerary itinerary = itineraries.get(position);
-                        queryDetail(itinerary);
+                        Fragment fragment = MainActivity.getCurrentFragment();
+                        if (fragment instanceof HomeFragment) {
+                            Itinerary itinerary = itineraries.get(position);
+                            queryDetail(itinerary);
+                        } else {
+                            Itinerary itinerary = itineraries.get(position);
+                            queryMyDetail(itinerary);
+                        }
                     }
                     return true;
                 }
@@ -118,6 +125,30 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
                 }
             });
         }
+    }
+
+    private void queryMyDetail(Itinerary itinerary) {
+        String detailsId = itinerary.getDetails().getObjectId();
+        ParseQuery<Details> query = ParseQuery.getQuery(Details.class);
+        // only get Detail with specific id
+        query.whereEqualTo("objectId", detailsId);
+        query.findInBackground(new FindCallback<Details>() {
+            @Override
+            public void done(List<Details> details, ParseException e) {
+                if (e != null) {
+                    Log.e(TAG, "Issue with getting details", e);
+                    return;
+                }
+                if (details.size() != 1) {
+                    Log.e(TAG, "We only want one detail!");
+                    return;
+                }
+                Fragment fragment = new DetailsFragment(details.get(0), itinerary);
+                AppCompatActivity activity = (AppCompatActivity) context;
+                activity.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentProfile, fragment).addToBackStack(null).commit();
+            }
+        });
     }
 
     private void deleteInParse(String objectId) {
