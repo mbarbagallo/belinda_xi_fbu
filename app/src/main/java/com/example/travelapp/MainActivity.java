@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -31,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        final FragmentManager fragmentManager = getSupportFragmentManager();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -44,19 +44,15 @@ public class MainActivity extends AppCompatActivity {
                 Fragment fragment;
                 switch (item.getItemId()) {
                     case R.id.action_compose:
-                        Toast.makeText(MainActivity.this, "add", Toast.LENGTH_SHORT).show();
                         fragment = new ComposeFragment();
                         break;
                     case R.id.action_home:
-                        Toast.makeText(MainActivity.this, "home", Toast.LENGTH_SHORT).show();
                         fragment = new HomeFragment();
                         break;
                     case R.id.action_profile:
-                        Toast.makeText(MainActivity.this, "profile", Toast.LENGTH_SHORT).show();
                         fragment = new ProfileFragment();
                         break;
                     default:
-                        // TODO - change fragment
                         fragment = new HomeFragment();
                         break;
                 }
@@ -79,5 +75,23 @@ public class MainActivity extends AppCompatActivity {
     public void switchToHomeFragment() {
         HomeFragment fragment = new HomeFragment();
         fragmentManager.beginTransaction().replace(R.id.fragmentCompose, fragment).commit();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.logOut) {
+            ParseUser.logOut();
+            // go back to login screen
+            Intent i = new Intent(this, LogInActivity.class);
+            startActivity(i);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

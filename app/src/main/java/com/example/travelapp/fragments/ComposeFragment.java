@@ -1,6 +1,6 @@
 package com.example.travelapp.fragments;
 
-import android.graphics.Color;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -9,13 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,22 +24,32 @@ import com.example.travelapp.Itinerary;
 import com.example.travelapp.MainActivity;
 import com.example.travelapp.MoreItemsAdapter;
 import com.example.travelapp.R;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FetchPhotoRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.Distance;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import org.json.JSONException;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static com.example.travelapp.Dijkstras.createGraph;
 import static com.example.travelapp.Dijkstras.findShortestPathAllVertices;
@@ -99,7 +107,6 @@ public class ComposeFragment extends Fragment {
         rvMoreItems.setLayoutManager(new LinearLayoutManager(getContext()));
 
         Places.initialize(getContext(), API_KEY);
-        PlacesClient placesClient = Places.createClient(getContext());
         AutocompleteSupportFragment autocompleteSupportFragment =
                 (AutocompleteSupportFragment) getChildFragmentManager()
                         .findFragmentById(R.id.autocomplete_fragment);
@@ -168,12 +175,7 @@ public class ComposeFragment extends Fragment {
         // create graph and call algorithm to determine path
         Graph graph = createGraph(ids, itinerary, visitAll);
         // list that stores the indices of locations in order of traversal from locations list
-        List<Integer> listNodesInt;
-        if (visitAll) {
-            listNodesInt = findShortestPathAllVertices(graph);
-        } else {
-            listNodesInt = getShortestPath(graph, firstPreference, secondPreference);
-        }
+        List<Integer> listNodesInt = visitAll ? findShortestPathAllVertices(graph) : getShortestPath(graph, firstPreference, secondPreference);
         // list that stores names of locations in order of traversal
         List<String> listNodesNames = new ArrayList<>();
         // list that stores distances between locations
@@ -215,6 +217,7 @@ public class ComposeFragment extends Fragment {
         itinerary.setTitle(etTitle.getText().toString());
         itinerary.setUser(currentUser);
         itinerary.setIds(ids);
+        setItineraryPhoto(itinerary);
         itinerary.setDetails(saveDetails(currentUser, itinerary, visitAll));
         itinerary.saveInBackground(new SaveCallback() {
             @Override
@@ -233,5 +236,51 @@ public class ComposeFragment extends Fragment {
             }
         });
         return itinerary;
+    }
+
+    public void setItineraryPhoto(Itinerary itinerary) {
+        try {
+            // Get placeId of the first location in the itinerary
+            String placeId = itinerary.getFirstId();
+            // Specify we want the photo metadata field
+            final List<Place.Field> fields = Collections.singletonList(Place.Field.PHOTO_METADATAS);
+            final FetchPlaceRequest placeRequest = FetchPlaceRequest.newInstance(placeId, fields);
+            PlacesClient placesClient = Places.createClient(getContext());
+            placesClient.fetchPlace(placeRequest).addOnSuccessListener((response) -> {
+                // Get Place object
+                Place place = response.getPlace();
+                // Get the photo metadata.
+                final List<PhotoMetadata> metadata = place.getPhotoMetadatas();
+                if (metadata == null || metadata.isEmpty()) {
+                    Log.w(TAG, "No photo metadata.");
+                    return;
+                }
+                PhotoMetadata photoMetadata = metadata.get(0);
+                // Create a photoRequest and fetch photo from the places client
+                FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(photoMetadata)
+                        .build();
+
+                placesClient.fetchPhoto(photoRequest).addOnSuccessListener((fetchPhotoResponse) -> {
+                    Bitmap bitmap = fetchPhotoResponse.getBitmap();
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    // Writes compressed version of bitmap to output stream
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                    byte[] scaledData = outputStream.toByteArray();
+                    Log.i(TAG, new String(scaledData));
+                    // Save image to Parse
+                    ParseFile image = new ParseFile("photo.jpeg", scaledData);
+                    itinerary.setImage(image);
+                    itinerary.saveInBackground();
+                }).addOnFailureListener((exception) -> {
+                    if (exception instanceof ApiException) {
+                        final ApiException apiException = (ApiException) exception;
+                        Log.e(TAG, "Place not found: " + exception.getMessage());
+                        return;
+                    }
+                });}
+            );
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
