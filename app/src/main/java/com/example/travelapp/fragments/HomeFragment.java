@@ -97,7 +97,7 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    class SwipeToDelete extends ItemTouchHelper.SimpleCallback {
+    static class SwipeToDelete extends ItemTouchHelper.SimpleCallback {
         private ItineraryAdapter adapter;
 
         public SwipeToDelete(ItineraryAdapter adapter) {
