@@ -42,6 +42,8 @@ public class HomeFragment extends Fragment implements ItineraryAdapter.DetailsLo
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        ((MainActivity) getActivity())
+                .getSupportActionBar().setTitle("Travel Feed");
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 

@@ -3,9 +3,11 @@
     android:id="@+id/fragmentCompose"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="#11386DA5">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvMoreItems"
@@ -24,6 +26,7 @@
             android:layout_marginStart="5dp"
             android:layout_marginTop="30dp"
             android:layout_toEndOf="@+id/autocomplete_fragment"
+            android:backgroundTint="#C87B96"
             android:text="Add" />
 
         <Button
@@ -34,6 +37,7 @@
             android:layout_alignParentBottom="false"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="15dp"
+            android:backgroundTint="#C87B96"
             android:text="submit" />
 
         <fragment
