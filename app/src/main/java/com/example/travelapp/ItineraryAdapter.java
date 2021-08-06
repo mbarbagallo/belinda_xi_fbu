@@ -76,6 +76,7 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
         private TextView tvDistance;
         private ImageView ivPhoto;
         private CardView cardView;
+        private TextView tvUser;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
@@ -83,6 +84,7 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
             tvDistance = itemView.findViewById(R.id.tvDistance);
             ivPhoto = itemView.findViewById(R.id.ivPhoto);
             cardView = itemView.findViewById(R.id.cardView);
+            tvUser = itemView.findViewById(R.id.tvUser);
             cardView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -96,6 +98,7 @@ public class ItineraryAdapter extends RecyclerView.Adapter<ItineraryAdapter.View
             tvTitle.setText(itinerary.getTitle());
             tvLocations.setText(itinerary.getLocations());
             tvDistance.setText(itinerary.getTotalDistance());
+            tvUser.setText("@" + itinerary.getUser().getUsername());
             ParseFile image = itinerary.getImage();
             if (image != null) {
                 Glide.with(context).load(image.getUrl()).into(ivPhoto);
