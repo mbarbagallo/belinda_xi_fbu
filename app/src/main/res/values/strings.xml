@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">TravelApp</string>
-    <string name="text_home">feed</string>
-    <string name="text_add">add</string>
-    <string name="text_profile">profile</string>
+    <string name="text_home">Travel Feed</string>
+    <string name="text_add">Add Itinerary</string>
+    <string name="text_profile">My Trips</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="google_maps_api_key">AIzaSyBHhtl_iqdU5RXtbl_10ElGRyal5eYxrl0</string>

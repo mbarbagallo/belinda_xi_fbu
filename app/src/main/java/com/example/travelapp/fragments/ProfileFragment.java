@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 
 import com.example.travelapp.Itinerary;
 import com.example.travelapp.ItineraryAdapter;
+import com.example.travelapp.MainActivity;
 import com.example.travelapp.R;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -25,7 +26,7 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements ItineraryAdapter.DetailsLongClickListener {
 
     private RecyclerView rvMyItineraries;
     protected List<Itinerary> allMyItineraries;
@@ -49,7 +50,7 @@ public class ProfileFragment extends Fragment {
         // setting up recycler view for just the current user's itineraries
         rvMyItineraries = view.findViewById(R.id.rvMyItineraries);
         allMyItineraries = new ArrayList<>();
-        adapter = new ItineraryAdapter(getContext(), allMyItineraries);
+        adapter = new ItineraryAdapter(getContext(), allMyItineraries, this);
         rvMyItineraries.setAdapter(adapter);
         rvMyItineraries.setLayoutManager(new LinearLayoutManager(getContext()));
         ItemTouchHelper itemTouchHelper = new
@@ -77,5 +78,17 @@ public class ProfileFragment extends Fragment {
                 adapter.notifyDataSetChanged();
             }
         });
+    }
+
+    @Override
+    public void OnLongClick(int position) {
+        if (position != RecyclerView.NO_POSITION) {
+            Fragment fragment = MainActivity.getCurrentFragment();
+            if (fragment instanceof HomeFragment) {
+                adapter.queryDetail(position);
+            } else {
+                adapter.queryMyDetail(position);
+            }
+        }
     }
 }

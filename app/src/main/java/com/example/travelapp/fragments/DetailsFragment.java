@@ -1,5 +1,6 @@
 package com.example.travelapp.fragments;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -15,6 +16,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.MultiTransformation;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.travelapp.Details;
 import com.example.travelapp.DetailsAdapter;
 import com.example.travelapp.Itinerary;
@@ -22,6 +28,8 @@ import com.example.travelapp.R;
 import com.parse.ParseFile;
 
 import java.util.List;
+
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
 public class DetailsFragment extends Fragment {
 
