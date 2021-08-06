@@ -1,5 +1,6 @@
 package com.example.travelapp.fragments;
 
+import android.Manifest;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -51,10 +52,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.RuntimePermissions;
+
 import static com.example.travelapp.Dijkstras.createGraph;
 import static com.example.travelapp.Dijkstras.findShortestPathAllVertices;
 import static com.example.travelapp.Dijkstras.getShortestPath;
 
+@RuntimePermissions
 public class ComposeFragment extends Fragment {
 
     private static final String TAG = "ComposeFragment";
@@ -85,6 +90,8 @@ public class ComposeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        ((MainActivity) getActivity())
+                .getSupportActionBar().setTitle("Add Itinerary");
         return inflater.inflate(R.layout.fragment_compose, container, false);
     }
 
@@ -107,30 +114,17 @@ public class ComposeFragment extends Fragment {
         rvMoreItems.setLayoutManager(new LinearLayoutManager(getContext()));
 
         Places.initialize(getContext(), API_KEY);
+
         AutocompleteSupportFragment autocompleteSupportFragment =
                 (AutocompleteSupportFragment) getChildFragmentManager()
                         .findFragmentById(R.id.autocomplete_fragment);
-        autocompleteSupportFragment.setTypeFilter(TypeFilter.ESTABLISHMENT);
-        autocompleteSupportFragment.setCountry("US");
-        // TODO - possibly add more fields
-        autocompleteSupportFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
-        autocompleteSupportFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(@NonNull Place place) {
-                placeName = place.getName();
-                placeId = place.getId();
-            }
-
-            @Override
-            public void onError(@NonNull Status status) {
-                Log.e(TAG, "error occurred: " + status);
-            }
-        });
+        ComposeFragmentPermissionsDispatcher.useAutocompleteFragmentWithPermissionCheck(this, autocompleteSupportFragment
+        );
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (placeName.isEmpty()) {
+                if (placeName == null || placeName.isEmpty()) {
                     Toast.makeText(getContext(), "can't enter empty location!", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -169,6 +163,25 @@ public class ComposeFragment extends Fragment {
             }
         });
 
+    }
+
+    @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    public void useAutocompleteFragment(AutocompleteSupportFragment autocompleteSupportFragment) {
+        autocompleteSupportFragment.setTypeFilter(TypeFilter.ESTABLISHMENT);
+        autocompleteSupportFragment.setCountry("US");
+        autocompleteSupportFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        autocompleteSupportFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                placeName = place.getName();
+                placeId = place.getId();
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                Log.e(TAG, "error occurred: " + status);
+            }
+        });
     }
 
     private Details saveDetails(ParseUser currentUser, Itinerary itinerary, boolean visitAll) throws InterruptedException {
@@ -291,5 +304,12 @@ public class ComposeFragment extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // NOTE: delegate the permission handling to generated method
+        ComposeFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 }

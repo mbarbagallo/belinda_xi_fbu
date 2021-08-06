@@ -24,6 +24,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.travelapp.Details;
 import com.example.travelapp.DetailsAdapter;
 import com.example.travelapp.Itinerary;
+import com.example.travelapp.MainActivity;
 import com.example.travelapp.R;
 import com.parse.ParseFile;
 
@@ -55,6 +56,8 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        ((MainActivity) getActivity())
+                .getSupportActionBar().setTitle("Trip Details");
         return inflater.inflate(R.layout.fragment_details, container, false);
     }
 

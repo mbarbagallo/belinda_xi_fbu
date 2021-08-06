@@ -1,5 +1,7 @@
 package com.example.travelapp.fragments;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -41,6 +43,8 @@ public class ProfileFragment extends Fragment implements ItineraryAdapter.Detail
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        ((MainActivity) getActivity())
+                .getSupportActionBar().setTitle("My Trips");
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
