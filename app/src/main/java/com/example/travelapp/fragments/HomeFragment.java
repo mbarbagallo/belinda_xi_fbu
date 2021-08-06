@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 
 import com.example.travelapp.Itinerary;
 import com.example.travelapp.ItineraryAdapter;
+import com.example.travelapp.MainActivity;
 import com.example.travelapp.R;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -25,7 +26,7 @@ import com.yalantis.phoenix.PullToRefreshView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements ItineraryAdapter.DetailsLongClickListener {
 
     private RecyclerView rvItineraries;
     protected List<Itinerary> allItineraries;
@@ -50,12 +51,9 @@ public class HomeFragment extends Fragment {
         rvItineraries = view.findViewById(R.id.rvItineraries);
 
         allItineraries = new ArrayList<>();
-        adapter = new ItineraryAdapter(getContext(), allItineraries);
+        adapter = new ItineraryAdapter(getContext(), allItineraries, this);
         rvItineraries.setAdapter(adapter);
         rvItineraries.setLayoutManager(new LinearLayoutManager(getContext()));
-        ItemTouchHelper itemTouchHelper = new
-                ItemTouchHelper(new SwipeToDelete(adapter));
-        itemTouchHelper.attachToRecyclerView(rvItineraries);
         queryItineraries();
         pullToRefreshView = (PullToRefreshView) view.findViewById(R.id.pull_to_refresh);
         pullToRefreshView.setOnRefreshListener(new PullToRefreshView.OnRefreshListener() {
@@ -95,6 +93,18 @@ public class HomeFragment extends Fragment {
                 adapter.notifyDataSetChanged();
             }
         });
+    }
+
+    @Override
+    public void OnLongClick(int position) {
+        if (position != RecyclerView.NO_POSITION) {
+            Fragment fragment = MainActivity.getCurrentFragment();
+            if (fragment instanceof HomeFragment) {
+                adapter.queryDetail(position);
+            } else {
+                adapter.queryMyDetail(position);
+            }
+        }
     }
 
     static class SwipeToDelete extends ItemTouchHelper.SimpleCallback {
