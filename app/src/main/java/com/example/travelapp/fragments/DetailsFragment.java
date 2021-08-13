@@ -28,6 +28,8 @@ import com.example.travelapp.MainActivity;
 import com.example.travelapp.R;
 import com.parse.ParseFile;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
@@ -39,6 +41,7 @@ public class DetailsFragment extends Fragment {
     private TextView tvDistanceDetails;
     private ImageView ivPhotoDetails;
     private RecyclerView rvDetails;
+    private TextView tvUserDetails;
     private Details details;
     private Itinerary itinerary;
     private DetailsAdapter adapter;
@@ -68,6 +71,7 @@ public class DetailsFragment extends Fragment {
         tvDestinationsDetails = view.findViewById(R.id.tvDestinationsDetails);
         tvDistanceDetails = view.findViewById(R.id.tvDistance);
         ivPhotoDetails = view.findViewById(R.id.ivPhoto);
+        tvUserDetails = view.findViewById(R.id.tvUserDetails);
 
         tvTitleDetails.setText(itinerary.getTitle());
         // convert array to String and remove [] at both ends of the String
@@ -76,6 +80,7 @@ public class DetailsFragment extends Fragment {
 
         tvDestinationsDetails.setText(destinations);
         tvDistanceDetails.setText(itinerary.getTotalDistance());
+        tvUserDetails.setText("@" + itinerary.getUser().getUsername());
         
         rvDetails = view.findViewById(R.id.rvDetails);
         adapter = new DetailsAdapter(getContext(), details);
